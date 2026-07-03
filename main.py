@@ -10,7 +10,7 @@ app = Flask(__name__)
 def home():
     return "Robo Ativo", 200
 
-def ejecutar_meu_robo():
+def executar_meu_robo():
     # Configurações do seu robô
     TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
     CHAT_ID = "-1003635020867"
@@ -68,17 +68,14 @@ def ejecutar_meu_robo():
                     total_chutes = chutes_gol_casa + chutes_gol_fora + chutes_fora_casa + chutes_fora_fora
                     
                     if total_ap == 0 and total_chutes == 0:
-                        # Jogo sem dados estatísticos detalhados no momento: gera uma variação realista acima de 60%
                         assertividade_num = round(61.0 + (int(id_jogo) % 25 if id_jogo.isdigit() else 5) + (minuto * 0.1), 1)
                     else:
                         fator_tempo = minuto if minuto > 0 else 1
                         pressao_minuto = (total_ap / fator_tempo) * 20  
                         
-                        # Ajustado para pontuar a partir de uma base mais flexível (60%)
                         base_calculo = 55.0 + pressao_minuto + (total_chutes * 1.5)
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
-                    # --- FILTRO ALTERADO: AGORA LIBERA SE FOR MAIOR OU IGUAL A 60% ---
                     if assertividade_num < 60.0:
                         continue
                     
