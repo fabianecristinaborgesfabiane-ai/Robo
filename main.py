@@ -114,7 +114,8 @@ def ejecutar_meu_robo():
                     requests.post(url_telegram, json=payload, timeout=10)
                     jogos_ja_enviados.add(id_jogo)
                     
-            print("😴 Aguardando 5 minutes para a próxima checagem...", flush=True)
+            # Alinhamento corrigido aqui para rodar sempre fora do loop de jogos
+            print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
             time.sleep(300)
             
         except Exception as e:
