@@ -10,7 +10,7 @@ app = Flask(__name__)
 def home():
     return "Robo Ativo", 200
 
-def ejecutar_meu_robo():
+def executar_meu_robo():
     # Configurações do seu robô
     TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
     CHAT_ID = "-1003635020867"
