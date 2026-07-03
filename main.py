@@ -21,7 +21,7 @@ def executar_meu_robo():
     
     while True:
         try:
-            print("🔄 Iniciando checagem rápida (1 min)...", flush=True)
+            print("🔄 Iniciando checagem rápida (5 min)...", flush=True)
             url = "https://flashlive-sports-data.p.rapidapi.com/v1/events/live-list"
             headers = {
                 "X-RapidAPI-Key": API_KEY,
@@ -76,7 +76,8 @@ def executar_meu_robo():
                         base_calculo = 55.0 + pressao_minuto + (total_chutes * 1.5)
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
-                    if assertividade_num < 60.0:
+                    # --- FILTRO SECO: SÓ PASSA SE FOR 70% OU MAIS (QUALQUER MINUTO) ---
+                    if assertividade_num < 70.0:
                         continue
                     
                     estrategia_name = "Pressão Live Dinâmica"
@@ -113,8 +114,8 @@ def executar_meu_robo():
                     requests.post(url_telegram, json=payload, timeout=10)
                     jogos_ja_enviados.add(id_jogo)
                     
-            print("😴 Aguardando 1 minuto para a próxima checagem...", flush=True)
-            time.sleep(60)
+            print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
+            time.sleep(300)
             
         except Exception as e:
             print(f"❌ Erro no loop do robô: {e}", flush=True)
