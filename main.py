@@ -10,7 +10,7 @@ app = Flask(__name__)
 def home():
     return "Robo Ativo", 200
 
-def executar_meu_robo():
+def ejecutar_meu_robo():
     # Configurações do seu robô
     TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
     CHAT_ID = "-1003635020867"
@@ -76,8 +76,8 @@ def executar_meu_robo():
                         base_calculo = 55.0 + pressao_minuto + (total_chutes * 1.5)
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
-                    # --- FILTRO SECO: SÓ PASSA SE FOR 70% OU MAIS (QUALQUER MINUTO) ---
-                    if assertividade_num < 70.0:
+                    # --- FILTRO SECO: SÓ PASSA SE FOR 60% OU MAIS (QUALQUER MINUTO) ---
+                    if assertividade_num < 60.0:
                         continue
                     
                     estrategia_name = "Pressão Live Dinâmica"
@@ -114,7 +114,7 @@ def executar_meu_robo():
                     requests.post(url_telegram, json=payload, timeout=10)
                     jogos_ja_enviados.add(id_jogo)
                     
-            print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
+            print("😴 Aguardando 5 minutes para a próxima checagem...", flush=True)
             time.sleep(300)
             
         except Exception as e:
