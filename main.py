@@ -41,13 +41,17 @@ def executar_meu_robo():
             else:
                 print("⚠️ A lista de jogos retornada pela API está vazia.", flush=True)
                         
-                    id_jogo = jogo.get("id")
-                    if id_jogo in jogos_ja_enviados:
-                        continue
-                        
-                    time_casa = jogo.get("homeTeam", {}).get("name", "Time Casa")
-                    time_fora = jogo.get("awayTeam", {}).get("name", "Time Fora")
-                    placar_casa = jogo.get("homeScore", {}).get("current", 0)
+                    iif jogos:
+            for jogo in jogos:
+                id_jogo = jogo.get("id")
+                if id_jogo in jogos_ja_enviados:
+                    continue
+                
+                time_casa = jogo.get("homeTeam", {}).get("name", "Time")
+                time_fora = jogo.get("awayTeam", {}).get("name", "Time")
+                print(f"🎯 JOGO ENCONTRADO: {time_casa} x {time_fora}", flush=True)
+        else:
+            print("⚠️ A lista de jogos retornada pela API está vazia.", flush=True)
                     placar_fora = jogo.get("awayScore", {}).get("current", 0)
                     total_gols = placar_casa + placar_fora
                     
