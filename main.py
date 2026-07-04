@@ -21,8 +21,8 @@ def enviar_telegram(msg):
     requests.post(url, json=payload)
 
 def monitorar_jogos():
-    # URL corrigida para buscar jogos de futebol ao vivo sem precisar de ID
-    url = "https://sofascore.p.rapidapi.com/v1/sport/football/events/live"
+    # URL padronizada para busca de eventos
+    url = "https://sofascore.p.rapidapi.com/matches/live"
     headers = {
         "x-rapidapi-key": API_KEY,
         "x-rapidapi-host": "sofascore.p.rapidapi.com"
@@ -33,20 +33,19 @@ def monitorar_jogos():
             print("🔄 Buscando jogos ao vivo...", flush=True)
             resposta = requests.get(url, headers=headers, timeout=15)
             
-            # 200 é o que a gente quer. 
+            # Se for 200, ele encontrou o endpoint
             if resposta.status_code == 200:
                 print("✅ Conectado com sucesso!", flush=True)
-                # O processamento dos dados entraria aqui.
+                # Lógica de análise de probabilidade virá aqui
             else:
                 print(f"⚠️ Status da API: {resposta.status_code}", flush=True)
                 
-            time.sleep(600) # 10 minutos conforme você pediu
+            time.sleep(600) 
             
         except Exception as e:
-            print(f"❌ Erro crítico: {e}", flush=True)
+            print(f"❌ Erro: {e}", flush=True)
             time.sleep(60)
 
-# Iniciar o robô
 threading.Thread(target=monitorar_jogos, daemon=True).start()
 
 if __name__ == "__main__":
