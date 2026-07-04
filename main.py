@@ -20,7 +20,7 @@ def executar_meu_robo():
     while True:
         try:
             print("🔄 Iniciando checagem...", flush=True)
-            url = "(https://sofascore.p.rapidapi.com/v1/events/live)"
+            url = "https://sofascore.p.rapidapi.com/v1/events/live"
             
             # CORREÇÃO 1: Host atualizado para bater com a URL da Sofascore
             headers = {
