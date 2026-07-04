@@ -34,9 +34,12 @@ def executar_meu_robo():
             
             if jogos:
                 for jogo in jogos:
-                    sport_id = jogo.get("sport", {}).get("id")
-                    if sport_id and sport_id != 1:
-                        continue
+                    time_casa = jogo.get("homeTeam", {}).get("name", "Time")
+                    time_fora = jogo.get("awayTeam", {}).get("name", "Time")
+                    print(f"🎯 JOGO ENCONTRADO: {time_casa} x {time_fora}", flush=True)
+                    # Comenta (coloca # na frente) as linhas de filtro e de cálculo abaixo
+            else:
+                print("⚠️ A lista de jogos retornada pela API está vazia.", flush=True)
                         
                     id_jogo = jogo.get("id")
                     if id_jogo in jogos_ja_enviados:
