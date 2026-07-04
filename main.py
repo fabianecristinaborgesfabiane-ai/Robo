@@ -6,40 +6,43 @@ import time
 
 app = Flask(__name__)
 
+# Configurações
+TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
+CHAT_ID = "-1003635020867"
+API_KEY = "6487863945mshbffab968d1e5404p149d50jsnae9782728573"
+
 @app.route('/')
 def home():
-    return "Robo Ativo - 10 min", 200
+    return "Robo Sofascore Ativo - 10 min", 200
+
+def enviar_mensagem(texto):
+    url_tel = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": CHAT_ID, "text": texto}
+    requests.post(url_tel, json=payload)
 
 def executar_meu_robo():
-    TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
-    CHAT_ID = "-1003635020867"
-    API_KEY = "6487863945mshbffab968d1e5404p149d50jsnae9782728573"
-    
-    # URL base da Free API Live Football Data
-    url = "https://free-api-live-football-data.p.rapidapi.com/football-live"
+    # URL do Sofascore para jogos ao vivo
+    url = "https://sofascore.p.rapidapi.com/v1/sport/football/events/live"
     headers = {
         "x-rapidapi-key": API_KEY,
-        "x-rapidapi-host": "free-api-live-football-data.p.rapidapi.com"
+        "x-rapidapi-host": "sofascore.p.rapidapi.com"
     }
     
     while True:
         try:
-            print("🔄 Iniciando checagem (ciclo de 10 min)...", flush=True)
+            print("🔄 Checando Sofascore...", flush=True)
             resposta = requests.get(url, headers=headers, timeout=15)
             
-            print(f"📡 Status da API: {resposta.status_code}", flush=True)
-            
             if resposta.status_code == 200:
-                print("✅ Conexão OK! Processando jogos ao vivo...", flush=True)
-                # O processamento dos dados entraria aqui
+                print("✅ Sucesso!", flush=True)
+                # Processamento dos jogos ao vivo vai aqui
             else:
-                print(f"⚠️ Erro na API: {resposta.text}", flush=True)
+                print(f"⚠️ Erro na API: {resposta.status_code}", flush=True)
                 
-            print("😴 Aguardando 10 minutos para o próximo ciclo...", flush=True)
-            time.sleep(600) # 600 segundos = 10 minutos
+            time.sleep(600) # 10 minutos
             
         except Exception as e:
-            print(f"❌ Erro crítico: {e}", flush=True)
+            print(f"❌ Erro: {e}", flush=True)
             time.sleep(60)
 
 threading.Thread(target=executar_meu_robo, daemon=True).start()
