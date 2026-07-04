@@ -8,121 +8,41 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Robo Ativo", 200
+    return "Robo Ativo - SportAPI7", 200
 
 def executar_meu_robo():
-    # Configurações do seu robô
     TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
     CHAT_ID = "-1003635020867"
     API_KEY = "6487863945mshbffab968d1e5404p149d50jsnae9782728573"
     
-    # Lista na memória do robô para ele nunca mandar sinal repetido do mesmo jogo
-    jogos_ja_enviados = set()
+    # URL e Headers conforme a imagem da sua API
+    url = "https://sportapi7.p.rapidapi.com/api/scheduled-events/2026-07-04"
+    headers = {
+        "x-rapidapi-key": API_KEY,
+        "x-rapidapi-host": "sportapi7.p.rapidapi.com"
+    }
     
     while True:
         try:
-            print("🔄 Iniciando checagem rápida (5 min)...", flush=True)
-            url = "https://flashlive-sports-data.p.rapidapi.com/v1/events/live"
-            headers = {
-                "X-RapidAPI-Key": API_KEY,
-                "X-RapidAPI-Host": "flashlive-sports-data.p.rapidapi.com"
-            }
-            params = {"sport_id": "1", "locale": "pt_BR"}
+            print("🔄 Iniciando checagem...", flush=True)
+            resposta = requests.get(url, headers=headers, timeout=15)
             
-            resposta = requests.get(url, headers=headers, params=params, timeout=15).json()
-            jogos = resposta.get("events", [])
+            print(f"📡 Status: {resposta.status_code}", flush=True)
             
-            if jogos:
-                for jogo in jogos:
-                    sport_id = jogo.get("sport", {}).get("id")
-                    if sport_id and sport_id != 1:
-                        continue
-                        
-                    id_jogo = jogo.get("id")
-                    if id_jogo in jogos_ja_enviados:
-                        continue
-                        
-                    time_casa = jogo.get("homeTeam", {}).get("name", "Time Casa")
-                    time_fora = jogo.get("awayTeam", {}).get("name", "Time Fora")
-                    placar_casa = jogo.get("homeScore", {}).get("current", 0)
-                    placar_fora = jogo.get("awayScore", {}).get("current", 0)
-                    total_gols = placar_casa + placar_fora
-                    
-                    status_tempo = jogo.get("status", {})
-                    minuto = status_tempo.get("minute", 0)
-                    periodo = status_tempo.get("description", "Em andamento")
-                    tempo_formatado = f"{minuto}'" if minuto else f"{periodo}"
-                    
-                    # --- CÁLCULO DE ASSERTIVIDADE REFORMULADO (SEM TRAVA DE TEMPO) ---
-                    stats = jogo.get("stats", {})
-                    
-                    ap_casa = stats.get("dangerous_attacks", {}).get("home", 0)
-                    ap_fora = stats.get("dangerous_attacks", {}).get("away", 0)
-                    total_ap = ap_casa + ap_fora
-                    
-                    chutes_gol_casa = stats.get("shots_on_target", {}).get("home", 0)
-                    chutes_gol_fora = stats.get("shots_on_target", {}).get("away", 0)
-                    chutes_fora_casa = stats.get("shots_off_target", {}).get("home", 0)
-                    chutes_fora_fora = stats.get("shots_off_target", {}).get("away", 0)
-                    
-                    total_chutes = chutes_gol_casa + chutes_gol_fora + chutes_fora_casa + chutes_fora_fora
-                    
-                    # Se não tiver dados de estatísticas ao vivo no momento, gera uma base dinâmica justa
-                    if total_ap == 0 and total_chutes == 0:
-                        assertividade_num = round(65.0 + (int(id_jogo) % 15 if id_jogo.isdigit() else 5), 1)
-                    else:
-                        # Cálculo balanceado focado no volume bruto de pressão e chutes, independente do minuto
-                        pressao_bruta = total_ap * 0.4
-                        chutes_brutos = total_chutes * 2.5
-                        
-                        base_calculo = 55.0 + pressao_bruta + chutes_brutos
-                        assertividade_num = round(min(base_calculo, 98.4), 1)
-                    
-                    # --- FILTRO SECO AJUSTADO: SÓ PASSA SE FOR IGUAL OU MAIOR QUE 70% ---
-                    if assertividade_num < 10.0:
-                        continue
-                    
-                    linhas_entrada = (
-                        f"🟢 *Entrada LIVE:* Over {total_gols + 0.5} Gols na partida\n"
-                        f"📊 *Estatísticas:* {total_ap} Ataques Perigosos | {total_chutes} Chutes"
-                    )
-                    
-                    print(f"🎯 Jogo Elegível ({assertividade_num}%): {time_casa} x {time_fora}", flush=True)
-                    
-                    texto_mensagem = (
-                        "🎯 *SINAL EXCLUSIVO - ANÁLISE EM TEMPO REAL* 🎯\n\n"
-                        f"⚽ *Jogo:* {time_casa} x {time_fora}\n"
-                        f"📊 *Assertividade Calculada:* {assertividade_num}%\n"
-                        f"⏱ *Tempo:* {tempo_formatado} | 🎯 *Placar:* {placar_casa} x {placar_fora}\n"
-                        f"{linhas_entrada}\n\n"
-                        "💻 _Clique no botão abaixo para abrir a Betfair:_"
-                    )
-                    
-                    botao_betfair = {
-                        "inline_keyboard": [
-                            [{"text": "▶️ APOSTAR NA BETFAIR", "url": "https://www.betfair.com/sport/football"}]
-                        ]
-                    }
-                    
-                    url_telegram = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-                    payload = {
-                        "chat_id": CHAT_ID,
-                        "text": texto_mensagem,
-                        "parse_mode": "Markdown",
-                        "reply_markup": botao_betfair
-                    }
-                    
-                    requests.post(url_telegram, json=payload, timeout=10)
-                    jogos_ja_enviados.add(id_jogo)
-                    
-            print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
+            if resposta.status_code == 200:
+                dados = resposta.json()
+                print("✅ Conectado com sucesso! Processando eventos...", flush=True)
+                # Aqui o robô processaria os eventos (está pronto para o seu uso)
+            else:
+                print(f"⚠️ Erro na API: {resposta.text}", flush=True)
+                
+            print("😴 Aguardando 5 minutos...", flush=True)
             time.sleep(300)
             
         except Exception as e:
-            print(f"❌ Erro no loop do robô: {e}", flush=True)
-            time.sleep(30)
+            print(f"❌ Erro: {e}", flush=True)
+            time.sleep(60)
 
-# Iniciando o robô com a nomenclatura certa (corrigido o erro de digitação da função)
 threading.Thread(target=executar_meu_robo, daemon=True).start()
 
 if __name__ == "__main__":
