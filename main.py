@@ -29,10 +29,16 @@ def executar_meu_robo():
             }
             params = {"sport_id": "1", "locale": "pt_BR"}
             
-            resposta = requests.get(url, headers=headers, params=params, timeout=15).json()
+            # --- RASTREAMENTO DA API ADICIONADO AQUI ---
+            resposta_bruta = requests.get(url, headers=headers, params=params, timeout=15)
+            print(f"📡 Status da API: {resposta_bruta.status_code}", flush=True)
+            print(f"📦 Resposta da API (Primeiros 200 letras): {resposta_bruta.text[:200]}", flush=True)
+            
+            resposta = resposta_bruta.json()
             jogos = resposta.get("events", [])
             
             if jogos:
+                print(f"🎰 Encontrei {len(jogos)} jogos ao vivo na API!", flush=True)
                 for jogo in jogos:
                     sport_id = jogo.get("sport", {}).get("id")
                     if sport_id and sport_id != 1:
@@ -53,7 +59,7 @@ def executar_meu_robo():
                     periodo = status_tempo.get("description", "Em andamento")
                     tempo_formatado = f"{minuto}'" if minuto else f"{periodo}"
                     
-                    # --- CÁLCULO DE ASSERTIVIDADE REFORMULADO (SEM TRAVA DE TEMPO) ---
+                    # --- CÁLCULO DE ASSERTIVIDADE REFORMULADO ---
                     stats = jogo.get("stats", {})
                     
                     ap_casa = stats.get("dangerous_attacks", {}).get("home", 0)
@@ -67,18 +73,15 @@ def executar_meu_robo():
                     
                     total_chutes = chutes_gol_casa + chutes_gol_fora + chutes_fora_casa + chutes_fora_fora
                     
-                    # Se não tiver dados de estatísticas ao vivo no momento, gera uma base dinâmica justa
                     if total_ap == 0 and total_chutes == 0:
                         assertividade_num = round(65.0 + (int(id_jogo) % 15 if id_jogo.isdigit() else 5), 1)
                     else:
-                        # Cálculo balanceado focado no volume bruto de pressão e chutes, independente do minuto
                         pressao_bruta = total_ap * 0.4
                         chutes_brutos = total_chutes * 2.5
-                        
                         base_calculo = 55.0 + pressao_bruta + chutes_brutos
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
-                    # --- FILTRO SECO AJUSTADO: SÓ PASSA SE FOR IGUAL OU MAIOR QUE 70% ---
+                    # --- FILTRO EM 10% PARA TESTE DE VALIDAÇÃO ---
                     if assertividade_num < 10.0:
                         continue
                     
@@ -114,6 +117,8 @@ def executar_meu_robo():
                     
                     requests.post(url_telegram, json=payload, timeout=10)
                     jogos_ja_enviados.add(id_jogo)
+            else:
+                print("⚠️ A lista de jogos retornou vazia de dentro do objeto.", flush=True)
                     
             print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
             time.sleep(300)
@@ -122,7 +127,7 @@ def executar_meu_robo():
             print(f"❌ Erro no loop do robô: {e}", flush=True)
             time.sleep(30)
 
-# Iniciando o robô com a nomenclatura certa (corrigido o erro de digitação da função)
+# Iniciando o robô
 threading.Thread(target=executar_meu_robo, daemon=True).start()
 
 if __name__ == "__main__":
