@@ -11,21 +11,21 @@ def home():
     return "Robo Ativo", 200
 
 def executar_meu_robo():
-    # Configurações do seu robô
     TOKEN = "8751846011:AAHFs-ho649VPN4KioG2-4LHDOubj8Lq65s"
     CHAT_ID = "-1003635020867"
     API_KEY = "6487863945mshbffab968d1e5404p149d50jsnae9782728573"
     
-    # Lista na memória do robô para ele nunca mandar sinal repetido do mesmo jogo
     jogos_ja_enviados = set()
     
     while True:
         try:
-            print("🔄 Iniciando checagem rápida (5 min)...", flush=True)
+            print("🔄 Iniciando checagem...", flush=True)
             url = "https://sofascore.p.rapidapi.com/v1/categories/list-live"
+            
+            # CORREÇÃO 1: Host atualizado para bater com a URL da Sofascore
             headers = {
                 "X-RapidAPI-Key": API_KEY,
-                "X-RapidAPI-Host": "flashlive-sports-data.p.rapidapi.com"
+                "X-RapidAPI-Host": "sofascore.p.rapidapi.com"
             }
             params = {"sport_id": "1", "locale": "pt_BR"}
             
@@ -53,9 +53,7 @@ def executar_meu_robo():
                     periodo = status_tempo.get("description", "Em andamento")
                     tempo_formatado = f"{minuto}'" if minuto else f"{periodo}"
                     
-                    # --- CÁLCULO DE ASSERTIVIDADE REFORMULADO (SEM TRAVA DE TEMPO) ---
                     stats = jogo.get("stats", {})
-                    
                     ap_casa = stats.get("dangerous_attacks", {}).get("home", 0)
                     ap_fora = stats.get("dangerous_attacks", {}).get("away", 0)
                     total_ap = ap_casa + ap_fora
@@ -64,22 +62,18 @@ def executar_meu_robo():
                     chutes_gol_fora = stats.get("shots_on_target", {}).get("away", 0)
                     chutes_fora_casa = stats.get("shots_off_target", {}).get("home", 0)
                     chutes_fora_fora = stats.get("shots_off_target", {}).get("away", 0)
-                    
                     total_chutes = chutes_gol_casa + chutes_gol_fora + chutes_fora_casa + chutes_fora_fora
                     
-                    # Se não tiver dados de estatísticas ao vivo no momento, gera uma base dinâmica justa
                     if total_ap == 0 and total_chutes == 0:
                         assertividade_num = round(65.0 + (int(id_jogo) % 15 if id_jogo.isdigit() else 5), 1)
                     else:
-                        # Cálculo balanceado focado no volume bruto de pressão e chutes, independente do minuto
                         pressao_bruta = total_ap * 0.4
                         chutes_brutos = total_chutes * 2.5
-                        
                         base_calculo = 55.0 + pressao_bruta + chutes_brutos
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
-                    # --- FILTRO SECO AJUSTADO: SÓ PASSA SE FOR IGUAL OU MAIOR QUE 70% ---
-                    if assertividade_num < 10.0:
+                    # CORREÇÃO 2: Filtro relaxado para 0.0 (vai enviar tudo agora)
+                    if assertividade_num < 0.0:
                         continue
                     
                     linhas_entrada = (
@@ -114,7 +108,7 @@ def executar_meu_robo():
                     
                     requests.post(url_telegram, json=payload, timeout=10)
                     jogos_ja_enviados.add(id_jogo)
-                    
+            
             print("😴 Aguardando 5 minutos para a próxima checagem...", flush=True)
             time.sleep(300)
             
@@ -122,7 +116,6 @@ def executar_meu_robo():
             print(f"❌ Erro no loop do robô: {e}", flush=True)
             time.sleep(30)
 
-# Iniciando o robô com a nomenclatura certa (corrigido o erro de digitação da função)
 threading.Thread(target=executar_meu_robo, daemon=True).start()
 
 if __name__ == "__main__":
