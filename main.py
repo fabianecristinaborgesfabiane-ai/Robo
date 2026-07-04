@@ -79,7 +79,7 @@ def executar_meu_robo():
                         assertividade_num = round(min(base_calculo, 98.4), 1)
                     
                     # --- FILTRO SECO AJUSTADO: SÓ PASSA SE FOR IGUAL OU MAIOR QUE 70% ---
-                    if assertividade_num < 70.0:
+                    if assertividade_num < 10.0:
                         continue
                     
                     linhas_entrada = (
